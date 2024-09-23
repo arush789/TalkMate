@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Logout from "./Logout";
 
 const Contacts = ({ contacts, currentUser, chatChange }) => {
     const [currentUserName, setCurrentUserName] = useState(undefined);
@@ -21,17 +22,20 @@ const Contacts = ({ contacts, currentUser, chatChange }) => {
     return (
         <div className="w-1/4 bg-gray-100 p-4 border-r rounded-l-3xl">
             {/* Current User Section */}
-            <div className="flex items-center space-x-4 mb-6">
-                {currentUserImage && (
-                    <img
-                        src={`data:image/svg+xml;base64,${currentUserImage}`}
-                        alt="avatar"
-                        className="w-12 h-12 rounded-full object-cover"
-                    />
-                )}
-                <h2 className="text-md font-bold text-black">
-                    {currentUserName}
-                </h2>
+            <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-x-4">
+                    {currentUserImage && (
+                        <img
+                            src={`data:image/svg+xml;base64,${currentUserImage}`}
+                            alt="avatar"
+                            className="w-12 h-12 rounded-full object-cover"
+                        />
+                    )}
+                    <h2 className="text-md font-bold text-black">
+                        {currentUserName}
+                    </h2>
+                </div>
+                <Logout />
             </div>
 
             {/* Contact List */}

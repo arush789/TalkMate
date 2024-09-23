@@ -1,5 +1,6 @@
 import { useRouter } from 'next/navigation'
 import React from 'react'
+import { IoMdLogOut } from "react-icons/io";
 
 const Logout = () => {
     const router = useRouter()
@@ -11,7 +12,7 @@ const Logout = () => {
 
     return (
         <div>
-            <button className='bg-red-500 p-3 rounded-xl' onClick={handleLogout}>Log out</button>
+            <button className='bg-red-500 p-3 rounded-xl' onClick={handleLogout}><IoMdLogOut /></button>
         </div>
     )
 }

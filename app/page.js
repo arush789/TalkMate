@@ -15,6 +15,8 @@ const Home = () => {
   const [image, setImage] = useState("");
   const [imageOpen, setImageOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(false);
+  const [messageMenu, setMessageMenu] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState(null);
   const [messages, setMessages] = useState([
     { sender: "John", text: "Hello!" },
     { sender: "Me", text: "Hey John!" },
@@ -69,6 +71,8 @@ const Home = () => {
     setImage("");
     setImageOpen(false);
     setSelectedImage("");
+    setMessageMenu(false);
+    setSelectedMessage("");
     if (socket.current) {
       socket.current.emit("set-active-chat", {
         userId: currentUser._id,
@@ -106,6 +110,10 @@ const Home = () => {
               setImageOpen={setImageOpen}
               selectedImage={selectedImage}
               setSelectedImage={setSelectedImage}
+              setMessageMenu={setMessageMenu}
+              messageMenu={messageMenu}
+              selectedMessage={selectedMessage}
+              setSelectedMessage={setSelectedMessage}
             />
           </>
         )}

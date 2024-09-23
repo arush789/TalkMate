@@ -3,6 +3,8 @@ import EmojiPicker from 'emoji-picker-react';
 import React, { useState } from 'react';
 import { storage } from '@/firebaseClient';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
+import { MdAddPhotoAlternate } from "react-icons/md";
+import { FiSend } from "react-icons/fi";
 
 const ChatInput = ({ handleSendMsg, image, setImage }) => {
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -108,60 +110,62 @@ const ChatInput = ({ handleSendMsg, image, setImage }) => {
                     </div>
                 )}
 
-                <div className="relative">
-                    {showEmojiPicker && (
-                        <div className="absolute bottom-full left-0 mb-2 z-10">
-                            <EmojiPicker onEmojiClick={handleEmojiClick} />
-                        </div>
-                    )}
-                    <button
-                        type="button"
-                        onClick={handleEmojiPickerSelector}
-                        className="flex items-center justify-center bg-transparent p-2 rounded-full hover:bg-gray-200 transition-colors"
-                    >
-                        <span role="img" aria-label="emoji" className="text-xl">
-                            😊
-                        </span>
-                    </button>
-                </div>
 
-                {/* File Upload Button */}
-                {!image && (
-                    <div className="relative">
-                        <button
-                            type="button"
-                            className="flex items-center justify-center bg-transparent px-2 rounded-full bg-gray-300 hover:bg-gray-400 transition-colors"
-                        >
-                            <input
-                                type="file"
-                                name="upload-file"
-                                onChange={handleFileUpload}
-                                className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
-                            />
-                            <span role="img" aria-label="file upload" className="text-xl text-blue-600">
-                                +
-                            </span>
-                        </button>
-                    </div>
-                )}
 
                 {/* Text Input */}
-                <form onSubmit={sendChat} className="flex-1 flex items-center">
+                <form onSubmit={sendChat} className="flex-1 flex items-center bg-gray-200 p-2 rounded-3xl gap-x-3">
                     <input
                         type="text"
-                        className="flex-1 p-2 border-2 border-gray-300 rounded-full mr-4 text-black focus:outline-none focus:ring-2 focus:ring-blue-500 bg-transparent"
+                        className="flex-1 p-2 bg-gray-200 text-black outline-none focus:outline-none bg-transparent"
                         placeholder="Type your message"
+                        placleholderColor="black"
                         value={msg}
                         onChange={(e) => setMsg(e.target.value)}
                     />
-                    {!loading &&
+                    {(msg.length > 0 || image) &&
                         < button
                             type="submit"
-                            className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-colors"
+                            className="bg-blue-500 text-white p-3 rounded-full hover:bg-blue-600 transition-colors"
                         >
-                            Send
+                            <FiSend />
                         </button>
                     }
+                    <div className="relative">
+                        {showEmojiPicker && (
+                            <div className="absolute bottom-full right-0 mb-2 z-10">
+                                <EmojiPicker onEmojiClick={handleEmojiClick} />
+                            </div>
+                        )}
+                        <button
+                            type="button"
+                            onClick={handleEmojiPickerSelector}
+                            className="flex items-center justify-center bg-transparent p-2 rounded-full hover:bg-gray-400 transition-colors"
+                        >
+                            <span role="img" aria-label="emoji" className="text-xl">
+                                😊
+                            </span>
+                        </button>
+                    </div>
+
+                    {/* File Upload Button */}
+                    {!image && (
+                        <div className="relative">
+                            <button
+                                type="button"
+                                className="flex items-center justify-center bg-transparent p-2 rounded-full bg-gray-300 hover:bg-gray-400 transition-colors"
+                            >
+                                <input
+                                    type="file"
+                                    name="upload-file"
+                                    onChange={handleFileUpload}
+                                    className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                                />
+                                <span role="img" aria-label="file upload" className="text-xl text-blue-600">
+                                    <MdAddPhotoAlternate />
+                                </span>
+                            </button>
+                        </div>
+                    )}
                 </form>
             </div>
         </>
