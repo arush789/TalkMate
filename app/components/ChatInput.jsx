@@ -1,10 +1,14 @@
 "use client";
 import EmojiPicker from 'emoji-picker-react';
 import React, { useState } from 'react';
+import { storage } from '@/firebaseClient';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 const ChatInput = ({ handleSendMsg, image, setImage }) => {
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [msg, setMsg] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [imageRef, setImageRef] = useState(null);
 
     const handleEmojiPickerSelector = () => {
         setShowEmojiPicker(!showEmojiPicker);
@@ -17,23 +21,60 @@ const ChatInput = ({ handleSendMsg, image, setImage }) => {
         }
     };
 
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImage(reader.result);
-            };
-            reader.readAsDataURL(file);
+    const handleFileUpload = (e) => {
+        const selectedFile = e.target.files[0];
+        setLoading(true);
+        if (selectedFile) {
+            const fileRef = storage.ref(`uploads/${selectedFile.name}`);
+            const uploadTask = fileRef.put(selectedFile);
+
+            uploadTask.on(
+                'state_changed',
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                },
+                (error) => {
+                    console.error("Error uploading file:", error);
+                    setLoading(false);
+                },
+                () => {
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        setImage(downloadURL);
+                        setImageRef(fileRef);
+                        setLoading(false);
+                    });
+                }
+            );
+        } else {
+            alert("No file selected");
+        }
+    };
+
+    console.log(loading)
+
+    const handleRemoveImage = () => {
+        if (imageRef) {
+            imageRef.delete()
+                .then(() => {
+                    console.log("Image deleted successfully from Firebase");
+                    setImage('');
+                    setImageRef(null);
+                })
+                .catch((error) => {
+                    console.error("Error deleting the image:", error);
+                });
+        } else {
+            alert("No image to delete");
         }
     };
 
     const sendChat = (e) => {
         e.preventDefault();
         if (msg.length > 0 || image) {
-            handleSendMsg({ msg, image });
+            handleSendMsg(msg, image);
             setMsg('');
             setImage('');
+            setImageRef(null)
         }
     };
 
@@ -41,20 +82,28 @@ const ChatInput = ({ handleSendMsg, image, setImage }) => {
         <>
 
             <div className="relative p-4 bg-transparent border-t flex items-center space-x-2">
-                {image && (
-                    <div className="absolute left-0 bottom-full bg-white p-4 rounded-t-3xl">
+                {(loading || image) && (
+                    <div className="absolute left-0 bottom-full bg-white p-4 rounded-t-3xl border-t-2 border-r-2">
                         <div className="group relative">
-                            <img
-                                src={image}
-                                alt="selected"
-                                className="w-40 h-40 object-cover rounded-lg"
-                            />
-                            <button
-                                className="absolute top-0 left-0 w-40 h-40 bg-black bg-opacity-50 text-white hidden group-hover:flex items-center justify-center rounded-lg"
-                                onClick={() => setImage('')}
-                            >
-                                Remove
-                            </button>
+                            {loading ? (
+                                <div className="w-40 h-40 flex items-center justify-center">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                                </div>
+                            ) : (
+                                <LazyLoadImage
+                                    src={image}
+                                    alt="selected"
+                                    className="w-40 h-40 object-cover rounded-lg"
+                                />
+                            )}
+                            {!loading && (
+                                <button
+                                    className="absolute top-0 left-0 w-40 h-40 bg-black bg-opacity-50 text-white hidden group-hover:flex items-center justify-center rounded-lg"
+                                    onClick={handleRemoveImage}
+                                >
+                                    Remove
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}
@@ -77,22 +126,24 @@ const ChatInput = ({ handleSendMsg, image, setImage }) => {
                 </div>
 
                 {/* File Upload Button */}
-                <div className="relative">
-                    <button
-                        type="button"
-                        className="flex items-center justify-center bg-transparent px-2 rounded-full bg-gray-300 hover:bg-gray-400 transition-colors"
-                    >
-                        <input
-                            type="file"
-                            name="upload-file"
-                            onChange={handleFileChange}
-                            className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
-                        />
-                        <span role="img" aria-label="file upload" className="text-xl text-blue-600">
-                            +
-                        </span>
-                    </button>
-                </div>
+                {!image && (
+                    <div className="relative">
+                        <button
+                            type="button"
+                            className="flex items-center justify-center bg-transparent px-2 rounded-full bg-gray-300 hover:bg-gray-400 transition-colors"
+                        >
+                            <input
+                                type="file"
+                                name="upload-file"
+                                onChange={handleFileUpload}
+                                className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                            />
+                            <span role="img" aria-label="file upload" className="text-xl text-blue-600">
+                                +
+                            </span>
+                        </button>
+                    </div>
+                )}
 
                 {/* Text Input */}
                 <form onSubmit={sendChat} className="flex-1 flex items-center">
@@ -103,12 +154,14 @@ const ChatInput = ({ handleSendMsg, image, setImage }) => {
                         value={msg}
                         onChange={(e) => setMsg(e.target.value)}
                     />
-                    <button
-                        type="submit"
-                        className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-colors"
-                    >
-                        Send
-                    </button>
+                    {!loading &&
+                        < button
+                            type="submit"
+                            className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-colors"
+                        >
+                            Send
+                        </button>
+                    }
                 </form>
             </div>
         </>
