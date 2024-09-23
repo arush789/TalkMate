@@ -3,7 +3,7 @@ import firebase from "firebase/compat/app";
 import "firebase/compat/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC8oAllaqbv6-eUd07h6QvVIRNEJTbIVuk",
+  apiKey: `${process.env.GOOGLE_API_KEY}`,
   authDomain: "talkmate-b5c8d.firebaseapp.com",
   projectId: "talkmate-b5c8d",
   storageBucket: "talkmate-b5c8d.appspot.com",
