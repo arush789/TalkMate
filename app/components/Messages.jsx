@@ -1,8 +1,27 @@
 import React, { useRef, useState } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { RxCross1 } from 'react-icons/rx';
+import axios from 'axios';
+import { deleteMessageRoute } from '../utils/APIroutes';
 
-const Messages = ({ messages, loading, setImageOpen, imageOpen, selectedImage, setSelectedImage, messageMenu, setMessageMenu, selectedMessage, setSelectedMessage }) => {
+const Messages = ({
+    messages,
+    setMessages,
+    loading,
+    setImageOpen,
+    imageOpen,
+    selectedImage,
+    setSelectedImage,
+    messageMenu,
+    setMessageMenu,
+    selectedMessage,
+    setSelectedMessage,
+    fetchMessages,
+    socket,
+    currentChat,
+    currentUser
+}) => {
+
     const holdTimer = useRef(null);
     const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
 
@@ -28,15 +47,31 @@ const Messages = ({ messages, loading, setImageOpen, imageOpen, selectedImage, s
         clearTimeout(holdTimer.current);
     };
 
-    const handleDeleteMessage = () => {
-        console.log("Message deleted:", selectedMessage);
-        setMessageMenu(false);
+    const handleDeleteMessage = async () => {
+        if (selectedMessage?.fromSelf) {
+            await axios.post(deleteMessageRoute, {
+                messageId: selectedMessage?.id
+            })
+
+            socket.current.emit("delete-msg", {
+                to: currentChat._id,
+                from: currentUser._id,
+                messageId: selectedMessage?.id,
+            });
+
+            setMessages((prevMessages) =>
+                prevMessages.filter((message) => message.id !== selectedMessage.id)
+            );
+
+            setMessageMenu(false);
+        }
     };
 
     const handleCloseMenu = () => {
         setMessageMenu(false);
         setSelectedMessage(null);
     };
+
 
     return (
         <>
@@ -51,18 +86,18 @@ const Messages = ({ messages, loading, setImageOpen, imageOpen, selectedImage, s
                             messages.map((message, index) => (
                                 <div
                                     key={index}
-                                    className={`mb-2 ${message.fromSelf ? "text-right" : "text-left"}`}
-                                    onMouseDown={(event) => handleMouseDown(message.message, event)}
+                                    className={`mb-2 ${message.fromSelf ? "text-left" : "text-right"}`}
+                                    onMouseDown={(event) => handleMouseDown(message, event)}
                                     onMouseUp={handleMouseUp}
                                 >
                                     <div
-                                        className={`inline-block max-w-72 p-3 rounded-3xl font-bold break-words ${message.fromSelf
-                                            ? "bg-blue-500 text-white text-left"
-                                            : "bg-gray-300 text-black text-left"
+                                        className={`inline-block max-w-72 ${message.image && !message.message ? "" : "p-3"}  rounded-2xl text-left  break-words ${message.fromSelf
+                                            ? `${message.image && !message.message ? "" : "bg-blue-500"} text-white`
+                                            : "bg-gray-300 text-black "
                                             }`}
                                     >
                                         {message.image && (
-                                            <div className="mb-2 flex justify-center" onClick={() => handleImageOpen(message.image)} >
+                                            <div className="mb-2  flex justify-center" onClick={() => handleImageOpen(message.image)} >
                                                 <LazyLoadImage
                                                     src={message.image}
                                                     alt="message-img"
@@ -86,11 +121,13 @@ const Messages = ({ messages, loading, setImageOpen, imageOpen, selectedImage, s
                             style={{ top: menuPosition.top, left: menuPosition.left }}
                         >
                             <div className="bg-white border-2 shadow-lg z-10 rounded-3xl w-40 py-4 px-4">
-                                <div className='p-2 bg-gray-200 hover:bg-slate-500 rounded-2xl mb-4' onClick={handleDeleteMessage}>
-                                    <button className="text-red-600">
-                                        Delete
-                                    </button>
-                                </div>
+                                {selectedMessage?.fromSelf && (
+                                    <div className='p-2 bg-gray-200 hover:bg-slate-500 rounded-2xl mb-4' onClick={handleDeleteMessage}>
+                                        <button className="text-red-600">
+                                            Delete
+                                        </button>
+                                    </div>
+                                )}
                                 <div className='p-2 bg-gray-200 hover:bg-slate-500 rounded-2xl' onClick={handleCloseMenu}>
                                     <button className="text-blue-600">
                                         Cancel

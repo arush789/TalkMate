@@ -52,7 +52,6 @@ const ChatInput = ({ handleSendMsg, image, setImage }) => {
         }
     };
 
-    console.log(loading)
 
     const handleRemoveImage = () => {
         if (imageRef) {
@@ -118,7 +117,7 @@ const ChatInput = ({ handleSendMsg, image, setImage }) => {
                         type="text"
                         className="flex-1 p-2 bg-gray-200 text-black outline-none focus:outline-none bg-transparent"
                         placeholder="Type your message"
-                        placleholderColor="black"
+
                         value={msg}
                         onChange={(e) => setMsg(e.target.value)}
                     />
