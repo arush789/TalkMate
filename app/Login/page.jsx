@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import axios from 'axios';
 import { loginRoute } from '../utils/APIroutes';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -96,6 +97,11 @@ const Login = () => {
                         Sign In
                     </button>
                 </form>
+                <div className='flex justify-center'>
+                    <h1 className='text-black mt-5'>
+                        Dont have an account, <Link href="/Register" className='text-blue-500 font-bold'>Register</Link>
+                    </h1>
+                </div>
             </div>
             {/* Moved ToastContainer here */}
             <ToastContainer />
