@@ -50,23 +50,29 @@ const Messages = ({
 
     const handleDeleteMessage = async () => {
         if (selectedMessage?.fromSelf) {
-            await axios.post(deleteMessageRoute, {
-                messageId: selectedMessage?.id
-            })
+            try {
 
-            socket.current.emit("delete-msg", {
-                to: currentChat._id,
-                from: currentUser._id,
-                messageId: selectedMessage?.id,
-            });
+                await axios.post(deleteMessageRoute, {
+                    messageId: selectedMessage?.id
+                });
 
-            setMessages((prevMessages) =>
-                prevMessages.filter((message) => message.id !== selectedMessage.id)
-            );
 
-            setMessageMenu(false);
+                await fetchMessages();
+
+                socket.current.emit("delete-msg", {
+                    to: currentChat._id,
+                    from: currentUser._id,
+                    messageId: selectedMessage?.id,
+                });
+            } catch (error) {
+                console.error("Error deleting message:", error);
+            } finally {
+                setMessageMenu(false);
+            }
         }
     };
+
+
 
     const handleCloseMenu = () => {
         setMessageMenu(false);
@@ -90,7 +96,7 @@ const Messages = ({
         <>
             {!imageOpen ? (
                 <>
-                    <div className="flex-1 p-4 bg-gray-50 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-300" >
+                    <div className="flex-1 p-4 bg-gray-800 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-300" >
                         {loading ? (
                             <div className="flex justify-center items-center h-full">
                                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -107,10 +113,10 @@ const Messages = ({
                                         ref={scrollRef}
                                     >
                                         <div
-                                            className={`inline-block max-w-72 ${emojiOnly ? "text-2xl p-0 py-2" : "text-md p-3"} rounded-2xl text-left break-words 
+                                            className={`inline-block max-w-72 ${emojiOnly ? "text-2xl p-0 py-2" : "text-md p-3"} text-white rounded-2xl text-left break-words 
                                                     ${message.fromSelf
-                                                    ? (!emojiOnly ? "bg-blue-500 text-white" : "text-white")
-                                                    : (!emojiOnly ? "bg-gray-300 text-black" : " text-black")
+                                                    ? (!emojiOnly ? "bg-blue-500 " : "")
+                                                    : (!emojiOnly ? "bg-slate-600 " : " ")
                                                 }`
                                             }
                                         >
@@ -139,7 +145,7 @@ const Messages = ({
                             className='absolute transition-opacity duration-200 ease-in-out z-10'
                             style={{ top: menuPosition.top, left: menuPosition.left }}
                         >
-                            <div className="bg-white border-2 shadow-lg z-10 rounded-3xl w-40 py-4 px-4">
+                            <div className="bg-white border-2 border-gray-500 shadow-lg z-10 rounded-3xl w-40 py-4 px-4">
                                 {selectedMessage?.fromSelf && (
                                     <div className='p-2 bg-gray-200 hover:bg-slate-500 rounded-2xl mb-4' onClick={handleDeleteMessage}>
                                         <button className="text-red-600">

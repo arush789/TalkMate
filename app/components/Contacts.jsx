@@ -20,7 +20,7 @@ const Contacts = ({ contacts, currentUser, chatChange }) => {
     };
 
     return (
-        <div className="w-1/4 bg-gray-100 p-4 border-r rounded-l-3xl">
+        <div className="w-1/4 bg-gray-800 p-4 border-r border-gray-500 rounded-l-3xl">
             {/* Current User Section */}
             <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-x-4">
@@ -31,7 +31,7 @@ const Contacts = ({ contacts, currentUser, chatChange }) => {
                             className="w-12 h-12 rounded-full object-cover"
                         />
                     )}
-                    <h2 className="text-md font-bold text-black">
+                    <h2 className="text-md font-bold text-white">
                         {currentUserName}
                     </h2>
                 </div>
@@ -43,7 +43,7 @@ const Contacts = ({ contacts, currentUser, chatChange }) => {
                 {contacts?.map((user, index) => (
                     <li
                         key={index}
-                        className={`flex items-center space-x-4 p-2 cursor-pointer rounded-md hover:bg-blue-100 transition-colors ${currentSelected === index ? "bg-blue-200" : "bg-white"
+                        className={`flex items-center space-x-4 p-2 cursor-pointer rounded-xl hover:bg-blue-100 transition-colors ${currentSelected === index ? "bg-blue-600" : "bg-slate-700"
                             } text-black`}
                         onClick={() => changeCurrentChat(index, user)}
                     >
@@ -55,7 +55,7 @@ const Contacts = ({ contacts, currentUser, chatChange }) => {
                             className="w-10 h-10 rounded-full object-cover"
                         />
                         {/* Username */}
-                        <span>{user.username}</span>
+                        <span className={`text-white`}>{user.username}</span>
                     </li>
                 ))}
             </ul>

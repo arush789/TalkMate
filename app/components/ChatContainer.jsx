@@ -93,6 +93,7 @@ const ChatContainer = ({
                 from: currentUser._id,
                 to: currentChat._id,
             });
+            console.log("Fetched Messages:", response.data); // Log fetched messages
             setMessages(response.data);
         } catch (error) {
             console.error("Error fetching messages:", error);
@@ -100,6 +101,7 @@ const ChatContainer = ({
             setLoading(false);
         }
     };
+
 
     useEffect(() => {
         if (currentChat) {
@@ -111,15 +113,14 @@ const ChatContainer = ({
 
     return (
         <div className="flex flex-col w-3/4">
-
-            <div className="p-4 bg-gray-200 border-b rounded-tr-3xl flex items-center justify-between">
+            <div className="p-4 bg-gray-800 border-b rounded-tr-3xl border-gray-500 flex items-center justify-between">
                 <div className='flex gap-x-4 items-center'>
                     <img
                         src={`data:image/svg+xml;base64,${currentChat.avatarImage}`}
                         alt="avatar"
                         className="w-12 h-12 rounded-full object-cover"
                     />
-                    <h1 className='text-black font-bold'>{currentChat.username}</h1>
+                    <h1 className='text-white font-bold'>{currentChat.username}</h1>
                 </div>
             </div>
 

@@ -82,8 +82,8 @@ const Home = () => {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <div className="flex h-[80vh] w-[90vw] max-w-5xl rounded-3xl shadow-2xl overflow-hidden bg-white border border-gray-300">
+    <div className="flex justify-center items-center h-screen bg-slate-600">
+      <div className="flex h-[80vh] w-[90vw] max-w-5xl rounded-3xl shadow-2xl overflow-hidden  ">
         {/* Left side: Contact List */}
         <Contacts
           contacts={contacts}
@@ -92,7 +92,7 @@ const Home = () => {
         />
 
         {currentChat === undefined ? (
-          <div className="flex justify-center items-center w-3/4 bg-gray-100">
+          <div className="flex justify-center items-center w-3/4 bg-gray-800">
             <p className="text-xl font-semibold text-gray-500">
               Please select a chat to start messaging
             </p>
