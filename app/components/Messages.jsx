@@ -19,7 +19,8 @@ const Messages = ({
     fetchMessages,
     socket,
     currentChat,
-    currentUser
+    currentUser,
+    scrollRef
 }) => {
 
     const holdTimer = useRef(null);
@@ -72,43 +73,61 @@ const Messages = ({
         setSelectedMessage(null);
     };
 
+    const isEmojiOnly = (message) => {
+        const emojiRegex = /(\p{Emoji_Presentation}|\p{Emoji}\uFE0F|\u200D)+/gu;
+        const cleanedMessage = message.trim();
+        const matchedEmojis = cleanedMessage.match(emojiRegex);
+        if (matchedEmojis) {
+
+            const emojiString = matchedEmojis.join('');
+            return emojiString === cleanedMessage;
+        }
+
+        return false;
+    };
 
     return (
         <>
             {!imageOpen ? (
                 <>
-                    <div className="flex-1 p-4 bg-gray-50 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-300">
+                    <div className="flex-1 p-4 bg-gray-50 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-300" >
                         {loading ? (
                             <div className="flex justify-center items-center h-full">
                                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
                             </div>
                         ) : messages && messages.length > 0 ? (
-                            messages.map((message, index) => (
-                                <div
-                                    key={index}
-                                    className={`mb-2 ${message.fromSelf ? "text-left" : "text-right"}`}
-                                    onMouseDown={(event) => handleMouseDown(message, event)}
-                                    onMouseUp={handleMouseUp}
-                                >
+                            messages.map((message, index) => {
+                                const emojiOnly = isEmojiOnly(message.message);
+                                return (
                                     <div
-                                        className={`inline-block max-w-72 ${message.image && !message.message ? "" : "p-3"}  rounded-2xl text-left  break-words ${message.fromSelf
-                                            ? `${message.image && !message.message ? "" : "bg-blue-500"} text-white`
-                                            : "bg-gray-300 text-black "
-                                            }`}
+                                        key={index}
+                                        className={`mb-2 ${message.fromSelf ? "text-left" : "text-right"}`}
+                                        onMouseDown={(event) => handleMouseDown(message, event)}
+                                        onMouseUp={handleMouseUp}
+                                        ref={scrollRef}
                                     >
-                                        {message.image && (
-                                            <div className="mb-2  flex justify-center" onClick={() => handleImageOpen(message.image)} >
-                                                <LazyLoadImage
-                                                    src={message.image}
-                                                    alt="message-img"
-                                                    className="w-52 h-52 object-cover rounded-2xl"
-                                                />
-                                            </div>
-                                        )}
-                                        {message.message}
+                                        <div
+                                            className={`inline-block max-w-72 ${emojiOnly ? "text-2xl p-0 py-2" : "text-md p-3"} rounded-2xl text-left break-words 
+                                                    ${message.fromSelf
+                                                    ? (!emojiOnly ? "bg-blue-500 text-white" : "text-white")
+                                                    : (!emojiOnly ? "bg-gray-300 text-black" : " text-black")
+                                                }`
+                                            }
+                                        >
+                                            {message.image && (
+                                                <div className="mb-2  flex justify-center" onClick={() => handleImageOpen(message.image)} >
+                                                    <LazyLoadImage
+                                                        src={message.image}
+                                                        alt="message-img"
+                                                        className="w-52 h-52 object-cover rounded-2xl"
+                                                    />
+                                                </div>
+                                            )}
+                                            {message.message}
+                                        </div>
                                     </div>
-                                </div>
-                            ))
+                                );
+                            })
                         ) : (
                             <p className="text-center text-gray-500">No messages yet</p>
                         )}
