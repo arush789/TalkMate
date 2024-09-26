@@ -3,6 +3,7 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { RxCross1 } from 'react-icons/rx';
 import axios from 'axios';
 import { deleteMessageRoute } from '../utils/APIroutes';
+import { motion } from 'framer-motion'; // Import motion for animations
 
 const Messages = ({
     messages,
@@ -40,8 +41,8 @@ const Messages = ({
     };
 
     const handleImageOpen = (image) => {
-        setImageOpen(true)
-        setSelectedImage(image)
+        setImageOpen(true);
+        setSelectedImage(image);
     }
 
     const handleMouseUp = () => {
@@ -52,17 +53,26 @@ const Messages = ({
         if (selectedMessage?.fromSelf) {
             try {
 
+                const messageIdToDelete = selectedMessage?.messageId || selectedMessage?.id;
                 await axios.post(deleteMessageRoute, {
-                    messageId: selectedMessage?.id
+                    messageId: messageIdToDelete,
                 });
 
 
-                await fetchMessages();
+                setMessages((prevMessages) => {
+                    const updatedMessages = prevMessages.filter((message) => {
+                        return (message.id && message.id !== messageIdToDelete) ||
+                            (message.messageId && message.messageId !== messageIdToDelete);
+                    });
+
+                    console.log("Updated Messages after deletion:", updatedMessages);
+                    return updatedMessages;
+                });
 
                 socket.current.emit("delete-msg", {
                     to: currentChat._id,
                     from: currentUser._id,
-                    messageId: selectedMessage?.id,
+                    messageId: messageIdToDelete,
                 });
             } catch (error) {
                 console.error("Error deleting message:", error);
@@ -72,6 +82,8 @@ const Messages = ({
         }
     };
 
+
+    console.log(selectedMessage)
 
 
     const handleCloseMenu = () => {
@@ -84,11 +96,9 @@ const Messages = ({
         const cleanedMessage = message.trim();
         const matchedEmojis = cleanedMessage.match(emojiRegex);
         if (matchedEmojis) {
-
             const emojiString = matchedEmojis.join('');
             return emojiString === cleanedMessage;
         }
-
         return false;
     };
 
@@ -105,8 +115,12 @@ const Messages = ({
                             messages.map((message, index) => {
                                 const emojiOnly = isEmojiOnly(message.message);
                                 return (
-                                    <div
+                                    <motion.div
                                         key={index}
+                                        initial={{ opacity: 0, y: 20 }} // Initial state
+                                        animate={{ opacity: 1, y: 0 }}   // Animate to visible
+                                        exit={{ opacity: 0, y: -20 }}     // Animate on exit
+                                        transition={{ duration: 0.3 }}    // Animation duration
                                         className={`mb-2 ${message.fromSelf ? "text-left" : "text-right"}`}
                                         onMouseDown={(event) => handleMouseDown(message, event)}
                                         onMouseUp={handleMouseUp}
@@ -121,7 +135,7 @@ const Messages = ({
                                             }
                                         >
                                             {message.image && (
-                                                <div className="mb-2  flex justify-center" onClick={() => handleImageOpen(message.image)} >
+                                                <div className={`${message.message == "" ? "" : "mb-2"} flex justify-center`} onClick={() => handleImageOpen(message.image)}>
                                                     <LazyLoadImage
                                                         src={message.image}
                                                         alt="message-img"
@@ -131,7 +145,7 @@ const Messages = ({
                                             )}
                                             {message.message}
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 );
                             })
                         ) : (
