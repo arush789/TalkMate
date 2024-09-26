@@ -3,6 +3,7 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { RxCross1 } from 'react-icons/rx';
 import axios from 'axios';
 import { deleteMessageRoute } from '../utils/APIroutes';
+import { motion } from 'framer-motion'; // Import motion for animations
 
 const Messages = ({
     messages,
@@ -40,8 +41,8 @@ const Messages = ({
     };
 
     const handleImageOpen = (image) => {
-        setImageOpen(true)
-        setSelectedImage(image)
+        setImageOpen(true);
+        setSelectedImage(image);
     }
 
     const handleMouseUp = () => {
@@ -50,23 +51,40 @@ const Messages = ({
 
     const handleDeleteMessage = async () => {
         if (selectedMessage?.fromSelf) {
-            await axios.post(deleteMessageRoute, {
-                messageId: selectedMessage?.id
-            })
+            try {
 
-            socket.current.emit("delete-msg", {
-                to: currentChat._id,
-                from: currentUser._id,
-                messageId: selectedMessage?.id,
-            });
+                const messageIdToDelete = selectedMessage?.messageId || selectedMessage?.id;
+                await axios.post(deleteMessageRoute, {
+                    messageId: messageIdToDelete,
+                });
 
-            setMessages((prevMessages) =>
-                prevMessages.filter((message) => message.id !== selectedMessage.id)
-            );
 
-            setMessageMenu(false);
+                setMessages((prevMessages) => {
+                    const updatedMessages = prevMessages.filter((message) => {
+                        return (message.id && message.id !== messageIdToDelete) ||
+                            (message.messageId && message.messageId !== messageIdToDelete);
+                    });
+
+                    console.log("Updated Messages after deletion:", updatedMessages);
+                    return updatedMessages;
+                });
+
+                socket.current.emit("delete-msg", {
+                    to: currentChat._id,
+                    from: currentUser._id,
+                    messageId: messageIdToDelete,
+                });
+            } catch (error) {
+                console.error("Error deleting message:", error);
+            } finally {
+                setMessageMenu(false);
+            }
         }
     };
+
+
+    console.log(selectedMessage)
+
 
     const handleCloseMenu = () => {
         setMessageMenu(false);
@@ -78,11 +96,9 @@ const Messages = ({
         const cleanedMessage = message.trim();
         const matchedEmojis = cleanedMessage.match(emojiRegex);
         if (matchedEmojis) {
-
             const emojiString = matchedEmojis.join('');
             return emojiString === cleanedMessage;
         }
-
         return false;
     };
 
@@ -90,7 +106,7 @@ const Messages = ({
         <>
             {!imageOpen ? (
                 <>
-                    <div className="flex-1 p-4 bg-gray-50 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-300" >
+                    <div className="flex-1 p-4 bg-gray-800 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-300" >
                         {loading ? (
                             <div className="flex justify-center items-center h-full">
                                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -99,23 +115,27 @@ const Messages = ({
                             messages.map((message, index) => {
                                 const emojiOnly = isEmojiOnly(message.message);
                                 return (
-                                    <div
+                                    <motion.div
                                         key={index}
+                                        initial={{ opacity: 0, y: 20 }} // Initial state
+                                        animate={{ opacity: 1, y: 0 }}   // Animate to visible
+                                        exit={{ opacity: 0, y: -20 }}     // Animate on exit
+                                        transition={{ duration: 0.3 }}    // Animation duration
                                         className={`mb-2 ${message.fromSelf ? "text-left" : "text-right"}`}
                                         onMouseDown={(event) => handleMouseDown(message, event)}
                                         onMouseUp={handleMouseUp}
                                         ref={scrollRef}
                                     >
                                         <div
-                                            className={`inline-block max-w-72 ${emojiOnly ? "text-2xl p-0 py-2" : "text-md p-3"} rounded-2xl text-left break-words 
+                                            className={`inline-block max-w-72 ${emojiOnly ? "text-2xl p-0 py-2" : "text-md p-3"} text-white rounded-2xl text-left break-words 
                                                     ${message.fromSelf
-                                                    ? (!emojiOnly ? "bg-blue-500 text-white" : "text-white")
-                                                    : (!emojiOnly ? "bg-gray-300 text-black" : " text-black")
+                                                    ? (!emojiOnly ? "bg-blue-500 " : "")
+                                                    : (!emojiOnly ? "bg-slate-600 " : " ")
                                                 }`
                                             }
                                         >
                                             {message.image && (
-                                                <div className="mb-2  flex justify-center" onClick={() => handleImageOpen(message.image)} >
+                                                <div className={`${message.message == "" ? "" : "mb-2"} flex justify-center`} onClick={() => handleImageOpen(message.image)}>
                                                     <LazyLoadImage
                                                         src={message.image}
                                                         alt="message-img"
@@ -125,7 +145,7 @@ const Messages = ({
                                             )}
                                             {message.message}
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 );
                             })
                         ) : (
@@ -139,7 +159,7 @@ const Messages = ({
                             className='absolute transition-opacity duration-200 ease-in-out z-10'
                             style={{ top: menuPosition.top, left: menuPosition.left }}
                         >
-                            <div className="bg-white border-2 shadow-lg z-10 rounded-3xl w-40 py-4 px-4">
+                            <div className="bg-white border-2 border-gray-500 shadow-lg z-10 rounded-3xl w-40 py-4 px-4">
                                 {selectedMessage?.fromSelf && (
                                     <div className='p-2 bg-gray-200 hover:bg-slate-500 rounded-2xl mb-4' onClick={handleDeleteMessage}>
                                         <button className="text-red-600">

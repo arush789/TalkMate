@@ -19,7 +19,7 @@ const ChatInput = ({ handleSendMsg, image, setImage }) => {
     const handleEmojiClick = (emojiData, event) => {
         if (emojiData && emojiData.emoji) {
             setMsg((prevMsg) => prevMsg + emojiData.emoji);
-            handleEmojiPickerSelector();
+
         }
     };
 
@@ -77,14 +77,15 @@ const ChatInput = ({ handleSendMsg, image, setImage }) => {
             setImage('');
             setImageRef(null)
         }
+        setShowEmojiPicker(false);
     };
 
     return (
         <>
 
-            <div className="relative p-4 bg-transparent border-t flex items-center space-x-2">
+            <div className="relative p-4 bg-gray-800 border-t border-gray-500 flex items-center space-x-2">
                 {(loading || image) && (
-                    <div className="absolute left-0 bottom-full bg-white p-4 rounded-t-3xl border-t-2 border-r-2">
+                    <div className="absolute left-0 bottom-full bg-gray-800 p-4 rounded-t-3xl border-t-2 border-r-2">
                         <div className="group relative">
                             {loading ? (
                                 <div className="w-40 h-40 flex items-center justify-center">
@@ -112,10 +113,10 @@ const ChatInput = ({ handleSendMsg, image, setImage }) => {
 
 
                 {/* Text Input */}
-                <form onSubmit={sendChat} className="flex-1 flex items-center bg-gray-200 p-2 rounded-3xl gap-x-3">
+                <form onSubmit={sendChat} className="flex-1 flex items-center bg-slate-700 p-2 rounded-3xl gap-x-3">
                     <input
                         type="text"
-                        className="flex-1 p-2 bg-gray-200 text-black outline-none focus:outline-none bg-transparent"
+                        className="flex-1 p-2 bg-slate-700 text-white outline-none focus:outline-none bg-transparent"
                         placeholder="Type your message"
 
                         value={msg}
@@ -159,7 +160,7 @@ const ChatInput = ({ handleSendMsg, image, setImage }) => {
                                     onChange={handleFileUpload}
                                     className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
                                 />
-                                <span role="img" aria-label="file upload" className="text-xl text-blue-600">
+                                <span role="img" aria-label="file upload" className="text-2xl text-white">
                                     <MdAddPhotoAlternate />
                                 </span>
                             </button>
